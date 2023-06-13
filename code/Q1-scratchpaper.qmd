@@ -1,0 +1,53 @@
+---
+title: "Q1 scratchpaper"
+format: html
+editor: visual
+---
+
+Question: How does total seed number differ between kangaroo rat mound locations?
+
+```{r}
+library(here)
+library(tidyverse)
+library(naniar)
+library(GGally)
+library(lmtest)
+library(glmmTMB)
+library(DHARMa)
+```
+
+```{r}
+rat <- read_csv(here("data","sev208_kratseedbank_20120213.txt"))
+```
+
+```{r}
+gg_miss_var(rat)
+```
+
+```{r}
+rat %>% 
+  ggpairs()
+
+```
+
+```{r}
+rat %>% 
+  select(!mnd) %>% 
+  ggpairs()
+```
+
+```{r}
+#ratmod <- lm(loc ~ seeds, data = rat)
+
+ratmod2 <- glm(loc ~ seeds, data = rat)
+
+ratmod3 <- glm.nb(loc ~ seeds, data = rat)
+
+ratmod4 <- glmer(loc ~ seeds, data = rat)
+
+ratmod5 <- glmer.nb(loc ~ seeds, data = rat)
+```
+
+```{r}
+plot(simulateResiduals(ratmod1))
+```

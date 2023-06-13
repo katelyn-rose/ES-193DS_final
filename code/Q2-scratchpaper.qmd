@@ -1,0 +1,6 @@
+---
+title: "Q2-scratchpaper"
+format: html
+editor: visual
+---
+

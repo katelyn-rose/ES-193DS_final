@@ -1,0 +1,62 @@
+---
+title: "Q2-scratchpaper"
+format: html
+editor: visual
+---
+
+```{r}
+library(here)
+library(MASS)
+library(tidyverse)
+library(naniar)
+library(GGally)
+library(lmtest)
+library(glmmTMB)
+library(lme4)
+library(DHARMa)
+library(MuMIn)
+```
+
+
+Questions: How does seed count vary with plot type (shrub or open), plant species, and total number of inflorescences? 
+Is there a simpler model that explains seed count, and if so, what is it?
+
+```{r}
+seed <- read_csv(here("data", "knb-lter-nwt.297.1", "shrubstudy_seed_ctwt.ms.data.csv"))
+```
+
+```{r}
+gg_miss_var(seed)
+```
+
+```{r}
+seed_count <- seed %>% 
+  select()
+```
+
+```{r}
+seedmod1 <- glm(nr_seeds ~ species + treatment + nr_infl_coll, data = seed, family = "poisson")
+
+seedmod2 <- glm.nb(nr_seeds ~ species + treatment + nr_infl_coll, data = seed)
+
+seedmod3 <- glmer(nr_seeds ~ species + treatment + nr_infl_coll + (1|aspect), data = seed, family = "poisson")
+
+seedmod4 <- glmer.nb(nr_seeds ~ species + treatment + nr_infl_coll + (1|aspect), data = seed)
+
+```
+
+```{r}
+plot(simulateResiduals(seedmod1))
+
+plot(simulateResiduals(seedmod2))
+
+plot(simulateResiduals(seedmod3))
+
+plot(simulateResiduals(seedmod4))
+```
+
+```{r}
+MuMIn::model.sel(seedmod1, seedmod2, seedmod3, seedmod4)
+```
+
+
