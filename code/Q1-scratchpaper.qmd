@@ -7,6 +7,7 @@ editor: visual
 Question: How does total seed number differ between kangaroo rat mound locations?
 
 ```{r}
+# loading in packages
 library(here)
 library(tidyverse)
 library(naniar)
@@ -17,11 +18,19 @@ library(DHARMa)
 ```
 
 ```{r}
+# reading in data
 rat <- read_csv(here("data","sev208_kratseedbank_20120213.txt"))
 ```
 
 ```{r}
 gg_miss_var(rat)
+```
+
+```{r}
+ggplot(data = rat, aes(x = loc, y = seeds)) +
+  geom_point() +
+  theme_bw() +
+  labs(x = "Mound location", y = "Total number of seeds")
 ```
 
 ```{r}
@@ -39,7 +48,7 @@ rat %>%
 ```{r}
 #ratmod <- lm(loc ~ seeds, data = rat)
 
-ratmod2 <- glm(loc ~ seeds, data = rat)
+ratmod2 <- glm(mnd ~ seeds, data = rat)
 
 ratmod3 <- glm.nb(loc ~ seeds, data = rat)
 
@@ -51,3 +60,12 @@ ratmod5 <- glmer.nb(loc ~ seeds, data = rat)
 ```{r}
 plot(simulateResiduals(ratmod1))
 ```
+
+
+```{r}
+ggplot(seed, aes(x = treatment, y = nr_infl_coll, fill = nr_seeds)) +
+  geom_point(aes(color = nr_seeds), alpha = 0.5) +
+  facet_wrap(~species, scales = "free_y") +
+  geom_violin(data = predictions, aes(x = x, y = predicted))
+```
+

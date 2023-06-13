@@ -15,6 +15,7 @@ library(glmmTMB)
 library(lme4)
 library(DHARMa)
 library(MuMIn)
+library(ggeffects)
 ```
 
 
@@ -59,4 +60,16 @@ plot(simulateResiduals(seedmod4))
 MuMIn::model.sel(seedmod1, seedmod2, seedmod3, seedmod4)
 ```
 
+```{r}
+predictions <- ggpredict(seedmod2, terms = c("species", "treatment", "nr_infl_coll")) %>% 
+  rename(treatment = group,
+         species = facet)
+```
+
+```{r}
+ggplot(seed, aes(x = treatment, y = nr_infl_coll, fill = nr_seeds)) +
+  geom_point(aes(color = nr_seeds), alpha = 0.5) +
+  facet_wrap(~species, scales = "free_y") +
+  geom_violin(data = predictions, aes(x = x, y = predicted))
+```
 

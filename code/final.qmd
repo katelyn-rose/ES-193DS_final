@@ -1,6 +1,72 @@
 ---
 title: "Final"
 author: "Katie Miller"
-format: html
-editor: visual
+format:
+  html:
+    toc: true
+    toc-location: left
+    code-fold: true
+execute:
+  message: false
+  warning: false
 ---
+
+# Problem 1
+
+## Introduction
+
+### Introduction Code
+
+```{r}
+# loading in packages
+library(here)
+library(tidyverse)
+library(naniar)
+library(GGally)
+library(lmtest)
+library(glmmTMB)
+library(DHARMa)
+```
+
+```{r}
+# reading in data
+rat <- read_csv(here("data","sev208_kratseedbank_20120213.txt"))
+```
+
+## Methods
+
+### Methods Figures & Code
+```{r}
+gg_miss_var(rat)
+```
+**Figure 1. Visualizing missing data.** There are no missing values in our kangaroo rat dataset.
+
+```{r}
+ggplot(data = rat, aes(x = loc, y = seeds)) +
+  geom_point() +
+  theme_bw() +
+  labs(x = "Mound location", y = "Total number of seeds")
+```
+**Figure 2. Exploratory data visualization.** There seems to be a correlation between mound location and number of seeds, further analysis should be conducted.
+
+## Results
+
+### Results Figures & Code
+
+## Bibliography
+
+# Problem 2
+
+## Introduction
+
+### Introduction Code
+
+## Methods
+
+### Methods Figures & Code
+
+## Results
+
+### Results Figures & Code
+
+## Bibliography
