@@ -15,6 +15,7 @@ library(GGally)
 library(lmtest)
 library(glmmTMB)
 library(DHARMa)
+library(rstatix)
 ```
 
 ```{r}
@@ -31,48 +32,6 @@ ggplot(data = rat, aes(x = loc, y = seeds)) +
   geom_point() +
   theme_bw() +
   labs(x = "Mound location", y = "Total number of seeds")
-```
-
-
-
-
-```{r}
-rat_summary <- rat %>% 
-  group_by(loc) %>% 
-  summarize(mean_l = mean(seeds),
-            sd_l = sd(seeds),
-            var_l = var(seeds),
-            count_l = length(seeds),
-            se_l = sd_l/sqrt(count_l),
-            margin_l = qt(0.95, df = count_l - 1) * se_l) 
-
-rat_summary
-```
-
-```{r}
-ggplot(data = rat) +
-  stat_qq(aes(sample = seeds)) +
-  stat_qq_line(aes(sample = seeds), color = "red") +
-  facet_wrap(~ loc)
-```
-
-
-
-```{r}
-ggplot(data = rat_summary, aes(x = loc, y = mean_l, color = loc)) +
-  geom_point(size = 3) +
-  geom_linerange(aes(ymin = mean_l - margin_l, ymax = mean_l + margin_l), linewidth = 1) +
-  geom_jitter(data = rat, aes(x = loc, y = seeds), alpha = 0.3) +
- # scale_color_manual(values = c("Reference" = "#E57B33", "Calcium-treated" = "#039199")) +
-#  labs(x = "Watershed", y = "Stem length (mm)") +
-  theme_bw() +
-  theme(legend.position = "none",
-        text = element_text(family = "Times New Roman"),
-        axis.title = element_text(size = 14),
-        axis.text = element_text(size = 12),
-        plot.caption = element_text(hjust = 0),
-        plot.caption.position = "plot",
-        plot.title.position = "plot")
 ```
 
 
@@ -99,53 +58,56 @@ i <- i[!is.na(i)]
 
 # Kruskal-Wallis rank sum test
 
-kruskal.test(list(b, d, e, i))
+krusk_test <- kruskal.test(list(b, d, e, i))
+
+krusk_test
 
 # proves that at least one is different 
 # location has an effect
 ```
 
+```{r}
+# could've just used this lol
+kruskal.test(seeds ~ loc, data = rat)
+```
 
 ```{r}
 # quantify the effect 
-rstatix::kruskal_effsize()
-```
-
-
-
-```{r}
 rat %>% 
-  ggpairs()
-
+  kruskal_effsize(seeds ~ loc)
 ```
 
 ```{r}
-rat %>% 
-  select(!mnd) %>% 
-  ggpairs()
+rat_sum <- rat %>% 
+  group_by(loc) %>% 
+  summarize(med_seeds = median(seeds)) 
 ```
 
 ```{r}
-#ratmod <- lm(loc ~ seeds, data = rat)
+ggplot(data = rat_sum, aes(x = loc, y = med_seeds, color = loc)) +
+  geom_point(size = 3) +
+  geom_jitter(data = rat, aes(x = loc, y = seeds), alpha = 0.3) +
+ # scale_color_manual(values = c("Reference" = "#E57B33", "Calcium-treated" = "#039199")) +
+  labs(x = "Mound location", y = "Total number of seeds") +
+  theme_bw() +
+  theme(legend.position = "none",
+        text = element_text(family = "Times New Roman"),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12))
 
-ratmod2 <- glm(mnd ~ seeds, data = rat)
-
-ratmod3 <- glm.nb(loc ~ seeds, data = rat)
-
-ratmod4 <- glmer(loc ~ seeds, data = rat)
-
-ratmod5 <- glmer.nb(loc ~ seeds, data = rat)
-```
-
-```{r}
-plot(simulateResiduals(ratmod1))
 ```
 
 
 ```{r}
-ggplot(seed, aes(x = treatment, y = nr_infl_coll, fill = nr_seeds)) +
-  geom_point(aes(color = nr_seeds), alpha = 0.5) +
-  facet_wrap(~species, scales = "free_y") +
-  geom_violin(data = predictions, aes(x = x, y = predicted))
+ggplot(data = rat_summary, aes(x = loc, y = mean_l, color = loc)) +
+  geom_point(size = 3) +
+  geom_linerange(aes(ymin = mean_l - margin_l, ymax = mean_l + margin_l), linewidth = 1) +
+  geom_jitter(data = rat, aes(x = loc, y = seeds), alpha = 0.3) +
+ # scale_color_manual(values = c("Reference" = "#E57B33", "Calcium-treated" = "#039199")) +
+  labs(x = "Mound location", y = "Total number of seeds") +
+  theme_bw() +
+  theme(legend.position = "none",
+        text = element_text(family = "Times New Roman"),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12))
 ```
-

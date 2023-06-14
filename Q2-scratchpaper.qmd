@@ -73,3 +73,12 @@ ggplot(seed, aes(x = treatment, y = nr_infl_coll, fill = nr_seeds)) +
   geom_violin(data = predictions, aes(x = x, y = predicted))
 ```
 
+```{r}
+MuMIn::dredge(na.omit(seed))
+```
+
+```{r}
+simple_seed <-
+
+```
+

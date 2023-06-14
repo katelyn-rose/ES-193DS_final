@@ -27,6 +27,7 @@ library(lmtest)
 library(glmmTMB)
 library(DHARMa)
 library(rstatix)
+library(flextable)
 ```
 
 ```{r}
@@ -53,7 +54,7 @@ ggplot(data = rat, aes(x = loc, y = seeds)) +
 
 ```{r}
 # Kruskal-Wallis rank sum test
-kruskal.test(seeds ~ loc, data = rat)
+kruskal.test(seeds ~ loc, data = rat) 
 ```
 **Table 1. Kruskal-Wallis rank sum test** At least two seed counts differ between the mound locations.
 
@@ -63,6 +64,21 @@ rat %>%
   kruskal_effsize(seeds ~ loc)
 ```
 **Table 2. Effect size for Kruskal Wallis.** The magnitude of the effect is small.
+
+```{r}
+ggplot(data = rat_summary, aes(x = loc, y = mean_l, color = loc)) +
+  geom_point(size = 3) +
+  geom_linerange(aes(ymin = mean_l - margin_l, ymax = mean_l + margin_l), linewidth = 1) +
+  geom_jitter(data = rat, aes(x = loc, y = seeds), alpha = 0.3) +
+ # scale_color_manual(values = c("Reference" = "#E57B33", "Calcium-treated" = "#039199")) +
+  labs(x = "Mound location", y = "Total number of seeds") +
+  theme_bw() +
+  theme(legend.position = "none",
+        text = element_text(family = "Times New Roman"),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12))
+```
+**Figure 3. Total number of seeds in each mound location.** The darker points represent the means with standard error bars and the lighter points represent the entire data set, The red represents ...
 
 ## Results
 
