@@ -33,6 +33,86 @@ ggplot(data = rat, aes(x = loc, y = seeds)) +
   labs(x = "Mound location", y = "Total number of seeds")
 ```
 
+
+
+
+```{r}
+rat_summary <- rat %>% 
+  group_by(loc) %>% 
+  summarize(mean_l = mean(seeds),
+            sd_l = sd(seeds),
+            var_l = var(seeds),
+            count_l = length(seeds),
+            se_l = sd_l/sqrt(count_l),
+            margin_l = qt(0.95, df = count_l - 1) * se_l) 
+
+rat_summary
+```
+
+```{r}
+ggplot(data = rat) +
+  stat_qq(aes(sample = seeds)) +
+  stat_qq_line(aes(sample = seeds), color = "red") +
+  facet_wrap(~ loc)
+```
+
+
+
+```{r}
+ggplot(data = rat_summary, aes(x = loc, y = mean_l, color = loc)) +
+  geom_point(size = 3) +
+  geom_linerange(aes(ymin = mean_l - margin_l, ymax = mean_l + margin_l), linewidth = 1) +
+  geom_jitter(data = rat, aes(x = loc, y = seeds), alpha = 0.3) +
+ # scale_color_manual(values = c("Reference" = "#E57B33", "Calcium-treated" = "#039199")) +
+#  labs(x = "Watershed", y = "Stem length (mm)") +
+  theme_bw() +
+  theme(legend.position = "none",
+        text = element_text(family = "Times New Roman"),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12),
+        plot.caption = element_text(hjust = 0),
+        plot.caption.position = "plot",
+        plot.title.position = "plot")
+```
+
+
+```{r}
+# median for kruskal test
+summary_median <- rat %>% 
+  reframe(B = case_when(loc =="B" ~ seeds),
+          D = case_when(loc =="D" ~ seeds),
+          E = case_when(loc =="E" ~ seeds),
+          I = case_when(loc =="I" ~ seeds))
+
+# transforming data table into vectors and removing NAs
+b <- summary_median$B
+b <- b[!is.na(b)]
+
+d <- summary_median$D
+d <- d[!is.na(d)]
+
+e <- summary_median$E
+e <- e[!is.na(e)]
+
+i <- summary_median$I
+i <- i[!is.na(i)]
+
+# Kruskal-Wallis rank sum test
+
+kruskal.test(list(b, d, e, i))
+
+# proves that at least one is different 
+# location has an effect
+```
+
+
+```{r}
+# quantify the effect 
+rstatix::kruskal_effsize()
+```
+
+
+
 ```{r}
 rat %>% 
   ggpairs()

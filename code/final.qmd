@@ -26,6 +26,7 @@ library(GGally)
 library(lmtest)
 library(glmmTMB)
 library(DHARMa)
+library(rstatix)
 ```
 
 ```{r}
@@ -37,7 +38,8 @@ rat <- read_csv(here("data","sev208_kratseedbank_20120213.txt"))
 
 ### Methods Figures & Code
 ```{r}
-gg_miss_var(rat)
+gg_miss_var(rat) +
+  theme_bw() 
 ```
 **Figure 1. Visualizing missing data.** There are no missing values in our kangaroo rat dataset.
 
@@ -48,6 +50,19 @@ ggplot(data = rat, aes(x = loc, y = seeds)) +
   labs(x = "Mound location", y = "Total number of seeds")
 ```
 **Figure 2. Exploratory data visualization.** There seems to be a correlation between mound location and number of seeds, further analysis should be conducted.
+
+```{r}
+# Kruskal-Wallis rank sum test
+kruskal.test(seeds ~ loc, data = rat)
+```
+**Table 1. Kruskal-Wallis rank sum test** At least two seed counts differ between the mound locations.
+
+```{r}
+# quantify the effect 
+rat %>% 
+  kruskal_effsize(seeds ~ loc)
+```
+**Table 2. Effect size for Kruskal Wallis.** The magnitude of the effect is small.
 
 ## Results
 
