@@ -15,11 +15,14 @@ execute:
 
 ## Introduction
 
+How does total seed number differ between kangaroo rat mound locations?
+
 ### Introduction Code
 
 ```{r}
 # loading in packages
 library(here)
+library(MASS)
 library(tidyverse)
 library(naniar)
 library(GGally)
@@ -28,6 +31,9 @@ library(glmmTMB)
 library(DHARMa)
 library(rstatix)
 library(flextable)
+library(lme4)
+library(MuMIn)
+library(ggeffects)
 ```
 
 ```{r}
@@ -56,7 +62,7 @@ ggplot(data = rat, aes(x = loc, y = seeds)) +
 # Kruskal-Wallis rank sum test
 kruskal.test(seeds ~ loc, data = rat) 
 ```
-**Table 1. Kruskal-Wallis rank sum test** At least two seed counts differ between the mound locations.
+**Table 1. Kruskal-Wallis rank sum test.** At least two seed counts differ between the mound locations.
 
 ```{r}
 # quantify the effect 
@@ -65,19 +71,6 @@ rat %>%
 ```
 **Table 2. Effect size for Kruskal Wallis.** The magnitude of the effect is small.
 
-```{r}
-ggplot(data = rat_summary, aes(x = loc, y = mean_l, color = loc)) +
-  geom_point(size = 3) +
-  geom_linerange(aes(ymin = mean_l - margin_l, ymax = mean_l + margin_l), linewidth = 1) +
-  geom_jitter(data = rat, aes(x = loc, y = seeds), alpha = 0.3) +
- # scale_color_manual(values = c("Reference" = "#E57B33", "Calcium-treated" = "#039199")) +
-  labs(x = "Mound location", y = "Total number of seeds") +
-  theme_bw() +
-  theme(legend.position = "none",
-        text = element_text(family = "Times New Roman"),
-        axis.title = element_text(size = 14),
-        axis.text = element_text(size = 12))
-```
 **Figure 3. Total number of seeds in each mound location.** The darker points represent the means with standard error bars and the lighter points represent the entire data set, The red represents ...
 
 ## Results
@@ -86,15 +79,113 @@ ggplot(data = rat_summary, aes(x = loc, y = mean_l, color = loc)) +
 
 ## Bibliography
 
+
+
+
+
+
 # Problem 2
 
 ## Introduction
+How does seed count vary with plot type (shrub or open), plant species, and total number of inflorescences? 
+Is there a simpler model that explains seed count, and if so, what is it?
 
 ### Introduction Code
+
+```{r}
+# reading in data
+seed <- read_csv(here("data", "knb-lter-nwt.297.1", "shrubstudy_seed_ctwt.ms.data.csv"))
+```
 
 ## Methods
 
 ### Methods Figures & Code
+
+```{r}
+# visualizing missing data
+gg_miss_var(seed)
+```
+**Figure 1. Visualizing missing data.** Our response variable, total number of seeds, has around 100 missing values.
+
+```{r}
+# creating a subset with variables of interest
+seed_subset <- seed %>% 
+  select(aspect, treatment, species, total_nr_infl, nr_seeds, 
+         dist_fr_shr, wt_seeds_mg)
+```
+
+
+```{r}
+# model selection: creating null model and testing different fits
+
+null_seedmod <- glm.nb(nr_seeds ~ 1, data = seed_subset)
+
+seedmod1 <- glm(nr_seeds ~ species + treatment + total_nr_infl, data = seed_subset, family = "poisson")
+
+seedmod2 <- glm.nb(nr_seeds ~ species + treatment + total_nr_infl, data = seed_subset)
+
+seedmod3 <- glmer(nr_seeds ~ species + treatment + total_nr_infl + (1|aspect), data = seed_subset, family = "poisson")
+
+seedmod4 <- glmer.nb(nr_seeds ~ species + treatment + total_nr_infl + (1|aspect), data = seed_subset)
+
+MuMIn::model.sel(null_seedmod, seedmod1, seedmod2, seedmod3, seedmod4)
+```
+**Table 1. Model selection.** Of our models, the Negative Binomial Generalized Linear Model fit the best. 
+
+```{r}
+# plotting simulated residuals for the the best fitting model
+plot(simulateResiduals(seedmod2))
+```
+**Figure 2.**
+
+```{r}
+#
+seedmod2 %>% 
+  as_flextable()
+```
+**Table 2.**
+
+```{r}
+# visualizing predictions
+```
+**Figure 2.**
+
+```{r}
+# simpler model?
+seed_subset %>% 
+  ggpairs(cardinality_threshold = 19)
+```
+**Figure 3. Pairs plot.** Allows us to see if there is a correlation between variables. 
+
+```{r}
+# preliminary data visualization: weight
+ggplot(data = seed_subset, aes(x = wt_seeds_mg, y = nr_seeds)) +
+  geom_point() +
+  theme_bw()  +
+  labs(x = "Weight of seeds (mg)", y = "Total number of seeds")
+```
+**Figure 4. Primary data visualization** Visualizing relationship between the weight of seeds and total number of seeds
+
+```{r}
+# preliminary data visualization: total inflorescence 
+ggplot(data = seed_subset, aes(x = total_nr_infl, y = nr_seeds)) +
+  geom_point() +
+  theme_bw()  +
+  labs(x = "Total number of inflorescenses", y = "Total number of seeds")
+```
+**Figure 5. Primary data visualization** Visualizing relationship between the weight of seeds and total number of seeds
+
+```{r}
+# creating the new (simpler?) model 
+seedmod6 <- glm.nb(nr_seeds ~ wt_seeds_mg + total_nr_infl, data = seed_subset)
+```
+
+```{r}
+#
+seedmod6 %>% 
+  as_flextable()
+```
+**Table 3.**
 
 ## Results
 

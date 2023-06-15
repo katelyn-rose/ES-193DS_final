@@ -31,18 +31,24 @@ gg_miss_var(seed)
 ```
 
 ```{r}
-seed_count <- seed %>% 
-  select()
+# creating a subset with variables of interest
+seed_subset <- seed %>% 
+  select(aspect, treatment, species, total_nr_infl, nr_seeds)
+```
+
+
+```{r}
+null_seedmod <- glm(nr_seeds ~ 1, data = seed_subset)
 ```
 
 ```{r}
-seedmod1 <- glm(nr_seeds ~ species + treatment + nr_infl_coll, data = seed, family = "poisson")
+seedmod1 <- glm(nr_seeds ~ species + treatment + total_nr_infl, data = seed_subset, family = "poisson")
 
-seedmod2 <- glm.nb(nr_seeds ~ species + treatment + nr_infl_coll, data = seed)
+seedmod2 <- glm.nb(nr_seeds ~ species + treatment + total_nr_infl, data = seed_subset)
 
-seedmod3 <- glmer(nr_seeds ~ species + treatment + nr_infl_coll + (1|aspect), data = seed, family = "poisson")
+seedmod3 <- glmer(nr_seeds ~ species + treatment + total_nr_infl + (1|aspect), data = seed_subset, family = "poisson")
 
-seedmod4 <- glmer.nb(nr_seeds ~ species + treatment + nr_infl_coll + (1|aspect), data = seed)
+seedmod4 <- glmer.nb(nr_seeds ~ species + treatment + total_nr_infl + (1|aspect), data = seed_subset)
 
 ```
 
@@ -57,11 +63,14 @@ plot(simulateResiduals(seedmod4))
 ```
 
 ```{r}
-MuMIn::model.sel(seedmod1, seedmod2, seedmod3, seedmod4)
+MuMIn::model.sel(null_seedmod, seedmod1, seedmod2, seedmod3, seedmod4)
 ```
 
+
+
+
 ```{r}
-predictions <- ggpredict(seedmod2, terms = c("species", "treatment", "nr_infl_coll")) %>% 
+predictions <- ggpredict(seedmod2, terms = c("species", "treatment", "total_nr_infl")) %>% 
   rename(treatment = group,
          species = facet)
 ```
@@ -73,12 +82,44 @@ ggplot(seed, aes(x = treatment, y = nr_infl_coll, fill = nr_seeds)) +
   geom_violin(data = predictions, aes(x = x, y = predicted))
 ```
 
+
+simpler model?
+
+
 ```{r}
-MuMIn::dredge(na.omit(seed))
+# simpler model?
+seed_subset %>% 
+  ggpairs(cardinality_threshold = 19)
+```
+
+
+```{r}
+# preliminary data visualization 
+ggplot(data = seed_subset, aes(x = total_nr_infl, y = nr_seeds)) +
+  geom_point() +
+  theme_bw() 
 ```
 
 ```{r}
-simple_seed <-
+# total seeds and inflor is corr?
+seedmod5 <- glm.nb(nr_seeds ~ total_nr_infl, data = seed_subset)
 
+seedmod6 <- glm.nb(nr_seeds ~ aspect + treatment + species, data = seed_subset)
+
+#seedmod7 <- glmer(nr_seeds ~ species + treatment + total_nr_infl + (1|aspect), data = seed_subset, family = "poisson")
+
+#seedmod8 <- glmer.nb(nr_seeds ~ species + treatment + total_nr_infl + (1|aspect), data = seed_subset)
+simple_seedmod1
 ```
 
+```{r}
+plot(simulateResiduals(seedmod6))
+```
+
+```{r}
+MuMIn::model.sel(seedmod2, seedmod6)
+```
+
+```{r}
+MuMIn::dredge(global.model = na.omit(seedmod2), evaluate = TRUE, rank = "AICc")
+```
