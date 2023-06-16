@@ -15,7 +15,7 @@ execute:
 
 ## Introduction
 
-How does total seed number differ between kangaroo rat mound locations?
+The kangaroo rat (Dipodomys sp.) represents a genus burrowing rodents which feed on various plant seeds. Kangaroo rats typically have a small circular home range of about 0.05 hectares where they collect large quantities of seeds for storage in their burrows (Schroder, 1979). Their mounds constitute small-scale disturbances which have been shown to alter the plant community by enhancing the surrounding seed bank (Alkon et al., 2010). Studies have shown that the kangaroo rat seed caching of several important range forage and browse species are essential to their regeneration (Sjoberg et al., 1984). Due to its relatively large impact on the ecosystem, the kangaroo rat is considered a keystone species (Chew, 2003). In this analysis we will be utilizing a dataset collected by Koontz and Simpson (2013) in order to understand how the quantity of seeds varies spatially between kangaroo rat mound locations; at the base of the mound (B), surrounding area of the mound (S), edge of Bouteloua eripoda (black grama) grass clumps (E), and the interspace between black grama grass clumps (I). If our hypothesis is supported, there will be a significant difference in the mean number of seeds between at least two locations.
 
 ### Introduction Code
 
@@ -42,6 +42,8 @@ rat <- read_csv(here("data","sev208_kratseedbank_20120213.txt"))
 ```
 
 ## Methods
+
+Koontz and Simpson (2013) collected data on kangaroo rat mounds in Sevilleta National Wildlife Refuge Long-term Ecological Research (LTER) site in Socorro County in central New Mexico to examine the effects of kangaroo rat mounds on surrounding plant communities. The resulting data was wrangled and uploaded to RStudio. We initially filtered the dataset to extract the variables most relevant to answering our research question: how does total seed number differ between kangaroo rat mound locations? The dataset is already cleaned with no missing data (Figure 1). Visually, there seems to be a relationship between the number of seeds versus mound location (Figure 2). Statistically, we used a Kruskal-Wallis rank sum test to determine that there is a significant difference in seed counts between at least two of the mound locations (Table 1, $x^2$(3) = 21.932, df = 3, p-value = >0.001, $\alpha$ = 0.005). We calculated the effect size to quantify the effect, which was small (Table 2). This finding supports our hypothesis that there will be a significant difference in the mean number of seeds between at least two locations. To measure the variation in seed counts between different mound locations, we performed a Pairwise Wilcoxon Rank Sum Test. The greatest difference in seed counts occurred between the base of the mound and the inter-space between black grama grass and the mound (Table 3). 
 
 ### Methods Figures & Code
 ```{r}
@@ -75,7 +77,13 @@ rat %>%
 # Wilcoxon signed rank test
 pairwise.wilcox.test(rat$seeds, rat$loc, p.adjust.method = "BH")
 ```
-**Table 3. Pairwise Wilcoxon Rank Sum Test.** The biggest difference in seed counts is between the 
+**Table 3. Pairwise Wilcoxon Rank Sum Test.** The biggest difference in seed counts is between the B (base of mound) and I (interspace between black grama grass and the mound).
+
+## Results
+
+We found that the number of seeds does vary by kangaroo rat mound location. Figure 3 compares the mean number of seeds in each mound location. There is a significant difference between mean seed counts at all locations. The highest mean number of seeds can be found at the base of the mound, and the lowest mean number of seeds can be found in the inter-space between black grama grass and the mound.
+
+### Results Figures & Code
 
 ```{r}
 # creating summary table
@@ -102,15 +110,17 @@ ggplot(data = rat_summary, aes (y = mean_seed, x = loc, color = loc)) +
 ```
 **Figure 3. Mean number of seeds in each mound location.** The points represent the mean number of seeds with bars for standard error. The colors represent different mound locations, red is base of mound, green is surrounding, blue is edge of grass, and purple is the inter-space. 
 
-## Results
-
-### Results Figures & Code
-
 ## Bibliography
 
+Alkon, P.U., et al. “The Composition of Seed Banks on Kangaroo Rat (Dipodomys Spectabilis) Mounds in a Chihuahuan Desert Grassland.” Journal of Arid Environments, 18 Apr. 2010, www.sciencedirect.com/science/article/pii/S0140196310000881?via%3Dihub#fig1. 
 
+Chew, R.M., et al. “Keystone Effects of the Endangered Stephens’ Kangaroo Rat (Dipodomys Stephensi).” Biological Conservation, 1 July 2003, www.sciencedirect.com/science/article/pii/S0006320703001848?casa_token=uIBPgLsVrKMAAAAA%3A3xlSN3_dBYFf9nESVSU6R83eAquf6AhCdnoowrJ_qsC7eSRScAeAmCcWXRmTP65lBxKkSvCCyRI. 
 
+Koontz, T. and H. Simpson. 2013. Effects of Kangaroo Rat Mounds on Seed Banks of Grass and Shrublands at the Sevilleta National Wildlife Refuge, New Mexico (2001) ver 102459. Environmental Data Initiative. https://doi.org/10.6073/pasta/115b8095a5e82028869a8c56eff14597 
 
+Schroder, Gene. “Foraging Behavior and Home Range Utilization of the Bannertail Kangaroo Rat.” Ecology, 1 Aug. 1979, esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1936601. 
+
+Sjoberg, Diana. “Kangaroo Rats.” University of Arizona, Feb. 1984, journals.uair.arizona.edu/index.php/rangelands/article/viewFile/11849/11122. 
 
 
 # Problem 2
@@ -192,7 +202,6 @@ plot(simulateResiduals(seedmod6))
 
 
 ## Results
-
 
 ### Results Figures & Code
 
