@@ -78,13 +78,33 @@ rat %>%
 ```
 
 ```{r}
+pairwise.wilcox.test(rat$seeds, rat$loc, p.adjust.method = "BH")
+```
+
+
+
+Making graphs:
+
+```{r}
 rat_sum <- rat %>% 
   group_by(loc) %>% 
   summarize(med_seeds = median(seeds)) 
 ```
 
 ```{r}
+rat_summary <- rat %>% 
+  group_by(loc) %>% 
+  summarize(mean_seed = mean(seeds),
+            sd_seed = sd(seeds),
+            var_seed = var(seeds),
+            count_seed = length(seeds),
+            se_seed = sd_seed/sqrt(count_seed),
+            margin_seed = qt(0.95, df = count_seed - 1) * se_seed)
+```
+
+```{r}
 ggplot(data = rat_sum, aes(x = loc, y = med_seeds, color = loc)) +
+  scale_y_log10() +
   geom_point(size = 3) +
   geom_jitter(data = rat, aes(x = loc, y = seeds), alpha = 0.3) +
  # scale_color_manual(values = c("Reference" = "#E57B33", "Calcium-treated" = "#039199")) +
@@ -95,6 +115,15 @@ ggplot(data = rat_sum, aes(x = loc, y = med_seeds, color = loc)) +
         axis.title = element_text(size = 14),
         axis.text = element_text(size = 12))
 
+```
+
+
+```{r}
+# best graph
+ggplot(data = rat_summary, aes (y = mean_seed, x = loc, color = loc)) +
+  geom_point() +
+  geom_linerange(aes(ymin = mean_seed - margin_seed, ymax = mean_seed + margin_seed), linewidth = 0.5) +
+  theme_bw()
 ```
 
 

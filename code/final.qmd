@@ -71,7 +71,30 @@ rat %>%
 ```
 **Table 2. Effect size for Kruskal Wallis.** The magnitude of the effect is small.
 
-**Figure 3. Total number of seeds in each mound location.** The darker points represent the means with standard error bars and the lighter points represent the entire data set, The red represents ...
+```{r}
+# Wilcoxon signed rank test
+pairwise.wilcox.test(rat$seeds, rat$loc, p.adjust.method = "BH")
+```
+**Table x. Wilcoxon signed rank test**
+
+```{r}
+# creating summary table
+rat_summary <- rat %>% 
+  group_by(loc) %>% 
+  summarize(mean_seed = mean(seeds),
+            sd_seed = sd(seeds),
+            var_seed = var(seeds),
+            count_seed = length(seeds),
+            se_seed = sd_seed/sqrt(count_seed),
+            margin_seed = qt(0.95, df = count_seed - 1) * se_seed)
+
+# plotting relationship
+ggplot(data = rat_summary, aes (y = mean_seed, x = loc, color = loc)) +
+  geom_point() +
+  geom_linerange(aes(ymin = mean_seed - margin_seed, ymax = mean_seed + margin_seed), linewidth = 0.5) +
+  theme_bw()
+```
+**Figure 3. Mean number of seeds in each mound location.** The darker points represent the means with standard error bars and the lighter points represent the entire data set, The red represents ...
 
 ## Results
 
@@ -114,7 +137,6 @@ seed_subset <- seed %>%
          dist_fr_shr, wt_seeds_mg)
 ```
 
-
 ```{r}
 # model selection: creating null model and testing different fits
 
@@ -146,48 +168,64 @@ seedmod2 %>%
 **Table 2.**
 
 ```{r}
-# visualizing predictions
-```
-**Figure 2.**
-
-```{r}
 # simpler model?
 seed_subset %>% 
   ggpairs(cardinality_threshold = 19)
 ```
-**Figure 3. Pairs plot.** Allows us to see if there is a correlation between variables. 
+**Figure x. Pairs plot.** Allows us to see if there is a correlation between variables. 
 
 ```{r}
-# preliminary data visualization: weight
-ggplot(data = seed_subset, aes(x = wt_seeds_mg, y = nr_seeds)) +
-  geom_point() +
-  theme_bw()  +
-  labs(x = "Weight of seeds (mg)", y = "Total number of seeds")
-```
-**Figure 4. Primary data visualization** Visualizing relationship between the weight of seeds and total number of seeds
+# simpler model to explain seed count?
+seedmod5 <- glm.nb(nr_seeds ~ wt_seeds_mg, data = seed_subset)
 
-```{r}
-# preliminary data visualization: total inflorescence 
-ggplot(data = seed_subset, aes(x = total_nr_infl, y = nr_seeds)) +
-  geom_point() +
-  theme_bw()  +
-  labs(x = "Total number of inflorescenses", y = "Total number of seeds")
-```
-**Figure 5. Primary data visualization** Visualizing relationship between the weight of seeds and total number of seeds
-
-```{r}
-# creating the new (simpler?) model 
 seedmod6 <- glm.nb(nr_seeds ~ wt_seeds_mg + total_nr_infl, data = seed_subset)
+
+seedmod7 <- glm.nb(nr_seeds ~ wt_seeds_mg + total_nr_infl + aspect, data = seed_subset)
+
+MuMIn::model.sel(seedmod2, seedmod5, seedmod6, seedmod7)
 ```
+**Table x. Simpler model selection.** Model 6 containing seed weight and total number of inflorescences is the simplest.
+
+```{r}
+plot(simulateResiduals(seedmod6))
+```
+**Table x. Check of assumptions for Model 6.**
 
 ```{r}
 #
 seedmod6 %>% 
   as_flextable()
 ```
-**Table 3.**
+**Table x.**
 
 ## Results
+
+```{r}
+# visualizing predictions for model 2
+
+# removing NAs
+seed.na <- seed %>% 
+  select(treatment, species, total_nr_infl, nr_seeds)
+
+seed.filtered <- na.omit(seed.na)
+
+# creating model predictions 
+predictions <- ggpredict(seedmod2, terms = c("total_nr_infl", "species", "treatment")) %>% 
+  rename(treatment = facet,
+         species = group)
+
+# graphing predictions
+ggplot(seed.filtered, aes(x = total_nr_infl, y = nr_seeds, color = treatment, na.rm = TRUE)) +
+  geom_point(alpha = 0.4) +
+  geom_line(data = predictions, aes(x = x, y = predicted, color = treatment)) +
+  facet_wrap(~ species)
+```
+**Figure x. Visualizing model predictions.**
+
+```{r}
+# visualizing predictions for model 6
+```
+
 
 ### Results Figures & Code
 

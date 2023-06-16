@@ -33,15 +33,16 @@ gg_miss_var(seed)
 ```{r}
 # creating a subset with variables of interest
 seed_subset <- seed %>% 
-  select(aspect, treatment, species, total_nr_infl, nr_seeds)
+  select(aspect, treatment, species, total_nr_infl, nr_seeds, dist_fr_shr, wt_seeds_mg)
 ```
 
-
 ```{r}
+# null model
 null_seedmod <- glm(nr_seeds ~ 1, data = seed_subset)
 ```
 
 ```{r}
+# model selection
 seedmod1 <- glm(nr_seeds ~ species + treatment + total_nr_infl, data = seed_subset, family = "poisson")
 
 seedmod2 <- glm.nb(nr_seeds ~ species + treatment + total_nr_infl, data = seed_subset)
@@ -53,6 +54,7 @@ seedmod4 <- glmer.nb(nr_seeds ~ species + treatment + total_nr_infl + (1|aspect)
 ```
 
 ```{r}
+# model selection
 plot(simulateResiduals(seedmod1))
 
 plot(simulateResiduals(seedmod2))
@@ -63,25 +65,53 @@ plot(simulateResiduals(seedmod4))
 ```
 
 ```{r}
+# model selection 
 MuMIn::model.sel(null_seedmod, seedmod1, seedmod2, seedmod3, seedmod4)
 ```
 
-
-
-
+Graphing 
 ```{r}
-predictions <- ggpredict(seedmod2, terms = c("species", "treatment", "total_nr_infl")) %>% 
-  rename(treatment = group,
-         species = facet)
+# removing NAs
+seed.na <- seed %>% 
+  select(treatment, species, total_nr_infl, nr_seeds)
+
+seed.filtered <- na.omit(seed.na)
 ```
 
 ```{r}
-ggplot(seed, aes(x = treatment, y = nr_infl_coll, fill = nr_seeds)) +
-  geom_point(aes(color = nr_seeds), alpha = 0.5) +
-  facet_wrap(~species, scales = "free_y") +
-  geom_violin(data = predictions, aes(x = x, y = predicted))
+predictions <- ggpredict(seedmod2, terms = c("total_nr_infl", "species", "treatment")) %>% 
+  rename(treatment = facet,
+         species = group)
+
+predictions
 ```
 
+```{r}
+ggplot(seed_subset, aes(x = total_nr_infl, y = nr_seeds, color = treatment)) +
+  geom_jitter(alpha = 0.4) +
+  facet_wrap(~ species) +
+   geom_line(data = predictions, aes(x = x, y = predicted, color = "blue")) +
+#  geom_boxplot(data = predictions, aes(x = predicted, y = nr_seeds), show.legend = FALSE) +
+  theme_bw() +
+  theme(legend.position = "none")  +
+  facet_wrap(~ species)
+```
+
+```{r}
+ggplot(seed_subset, aes(x = total_nr_infl, y = nr_seeds, color = treatment, na.rm = TRUE)) +
+  geom_point(alpha = 0.4) +
+  geom_line(data = predictions, aes(x = x, y = predicted, color = treatment)) +
+  facet_wrap(~ species)
+ # facet_wrap(~ c("AREFEN", "CARRUP", "GEUROS", "KOBMYO", "MINOBT", "TRIDAS"))
+```
+
+```{r}
+# best graph 
+ggplot(seed.filtered, aes(x = total_nr_infl, y = nr_seeds, color = treatment, na.rm = TRUE)) +
+  geom_point(alpha = 0.4) +
+  geom_line(data = predictions, aes(x = x, y = predicted, color = treatment)) +
+  facet_wrap(~ species)
+```
 
 simpler model?
 
@@ -94,32 +124,37 @@ seed_subset %>%
 
 
 ```{r}
-# preliminary data visualization 
-ggplot(data = seed_subset, aes(x = total_nr_infl, y = nr_seeds)) +
+# preliminary data visualization 1
+ggplot(data = seed_subset, aes(x = wt_seeds_mg, y = nr_seeds)) +
   geom_point() +
-  theme_bw() 
+  theme_bw()  +
+  labs(x = "Weight of seeds (mg)", y = "Total number of seeds")
 ```
 
 ```{r}
-# total seeds and inflor is corr?
-seedmod5 <- glm.nb(nr_seeds ~ total_nr_infl, data = seed_subset)
+# total seeds corr?
+seedmod5 <- glm.nb(nr_seeds ~ wt_seeds_mg, data = seed_subset)
 
-seedmod6 <- glm.nb(nr_seeds ~ aspect + treatment + species, data = seed_subset)
+seedmod6 <- glm.nb(nr_seeds ~ wt_seeds_mg + total_nr_infl, data = seed_subset)
 
-#seedmod7 <- glmer(nr_seeds ~ species + treatment + total_nr_infl + (1|aspect), data = seed_subset, family = "poisson")
+seedmod7 <- glm.nb(nr_seeds ~ wt_seeds_mg + total_nr_infl + aspect, data = seed_subset)
 
 #seedmod8 <- glmer.nb(nr_seeds ~ species + treatment + total_nr_infl + (1|aspect), data = seed_subset)
 simple_seedmod1
 ```
 
 ```{r}
-plot(simulateResiduals(seedmod6))
+plot(simulateResiduals(seedmod5))
 ```
 
 ```{r}
-MuMIn::model.sel(seedmod2, seedmod6)
+MuMIn::model.sel(seedmod2, seedmod5, seedmod6, seedmod7)
 ```
 
+
+Results graphing
+
 ```{r}
-MuMIn::dredge(global.model = na.omit(seedmod2), evaluate = TRUE, rank = "AICc")
+
 ```
+
