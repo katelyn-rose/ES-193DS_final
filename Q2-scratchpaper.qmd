@@ -69,49 +69,6 @@ plot(simulateResiduals(seedmod4))
 MuMIn::model.sel(null_seedmod, seedmod1, seedmod2, seedmod3, seedmod4)
 ```
 
-Graphing 
-```{r}
-# removing NAs
-seed.na <- seed %>% 
-  select(treatment, species, total_nr_infl, nr_seeds)
-
-seed.filtered <- na.omit(seed.na)
-```
-
-```{r}
-predictions <- ggpredict(seedmod2, terms = c("total_nr_infl", "species", "treatment")) %>% 
-  rename(treatment = facet,
-         species = group)
-
-predictions
-```
-
-```{r}
-ggplot(seed_subset, aes(x = total_nr_infl, y = nr_seeds, color = treatment)) +
-  geom_jitter(alpha = 0.4) +
-  facet_wrap(~ species) +
-   geom_line(data = predictions, aes(x = x, y = predicted, color = "blue")) +
-#  geom_boxplot(data = predictions, aes(x = predicted, y = nr_seeds), show.legend = FALSE) +
-  theme_bw() +
-  theme(legend.position = "none")  +
-  facet_wrap(~ species)
-```
-
-```{r}
-ggplot(seed_subset, aes(x = total_nr_infl, y = nr_seeds, color = treatment, na.rm = TRUE)) +
-  geom_point(alpha = 0.4) +
-  geom_line(data = predictions, aes(x = x, y = predicted, color = treatment)) +
-  facet_wrap(~ species)
- # facet_wrap(~ c("AREFEN", "CARRUP", "GEUROS", "KOBMYO", "MINOBT", "TRIDAS"))
-```
-
-```{r}
-# best graph 
-ggplot(seed.filtered, aes(x = total_nr_infl, y = nr_seeds, color = treatment, na.rm = TRUE)) +
-  geom_point(alpha = 0.4) +
-  geom_line(data = predictions, aes(x = x, y = predicted, color = treatment)) +
-  facet_wrap(~ species)
-```
 
 simpler model?
 
@@ -155,6 +112,81 @@ MuMIn::model.sel(seedmod2, seedmod5, seedmod6, seedmod7)
 Results graphing
 
 ```{r}
-
+ggplot(seed.filtered, aes(x = total_nr_infl, y = nr_seeds, color = treatment, na.rm = TRUE)) +
+  geom_point(alpha = 0.4) +
+  geom_line(data = predictions, aes(x = x, y = predicted, color = treatment)) +
+  facet_wrap(~ species)
 ```
+
+Results graphing 
+
+Model 2:
+
+```{r}
+# removing NAs
+seed.na <- seed %>% 
+  select(treatment, species, total_nr_infl, nr_seeds)
+
+seed.filtered <- na.omit(seed.na)
+```
+
+```{r}
+predictions <- ggpredict(seedmod2, terms = c("total_nr_infl", "species", "treatment")) %>% 
+  rename(treatment = facet,
+         species = group)
+
+predictions
+```
+
+```{r}
+ggplot(seed_subset, aes(x = total_nr_infl, y = nr_seeds, color = treatment)) +
+  geom_jitter(alpha = 0.4) +
+  facet_wrap(~ species) +
+   geom_line(data = predictions, aes(x = x, y = predicted, color = "blue")) +
+#  geom_boxplot(data = predictions, aes(x = predicted, y = nr_seeds), show.legend = FALSE) +
+  theme_bw() +
+  theme(legend.position = "none")  +
+  facet_wrap(~ species)
+```
+
+```{r}
+ggplot(seed_subset, aes(x = total_nr_infl, y = nr_seeds, color = treatment, na.rm = TRUE)) +
+  geom_point(alpha = 0.4) +
+  geom_line(data = predictions, aes(x = x, y = predicted, color = treatment)) +
+  facet_wrap(~ species)
+ # facet_wrap(~ c("AREFEN", "CARRUP", "GEUROS", "KOBMYO", "MINOBT", "TRIDAS"))
+```
+
+```{r}
+# best graph !
+ggplot(seed.filtered, aes(x = total_nr_infl, y = nr_seeds, color = treatment, na.rm = TRUE)) +
+  geom_point(alpha = 0.4) +
+  geom_line(data = predictions, aes(x = x, y = predicted, color = treatment)) +
+  facet_wrap(~ species)
+```
+
+model 6:
+
+```{r}
+# visualizing predictions for model 6
+
+# removing NAs
+mod6.na <- seed %>% 
+  select(wt_seeds_mg, total_nr_infl, nr_seeds)
+
+mod6seed.filter <- na.omit(mod6.na)
+
+
+# creating model predictions 
+mod6.pred <- ggpredict(seedmod6, terms = c("wt_seeds_mg", "total_nr_infl")) 
+  rename(weight = group)
+
+
+# graphing predictions
+ggplot(mod6seed.filter, aes(x = total_nr_infl, y = nr_seeds, color = wt_seeds_mg)) +
+  geom_point(alpha = 0.4) +
+  geom_line(data = mod6.pred, aes(x = x, y = predicted, color = group)) 
+```
+
+
 

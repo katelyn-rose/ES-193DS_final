@@ -75,7 +75,7 @@ rat %>%
 # Wilcoxon signed rank test
 pairwise.wilcox.test(rat$seeds, rat$loc, p.adjust.method = "BH")
 ```
-**Table x. Wilcoxon signed rank test**
+**Table 3. Pairwise Wilcoxon Rank Sum Test.** The biggest difference in seed counts is between the 
 
 ```{r}
 # creating summary table
@@ -92,9 +92,15 @@ rat_summary <- rat %>%
 ggplot(data = rat_summary, aes (y = mean_seed, x = loc, color = loc)) +
   geom_point() +
   geom_linerange(aes(ymin = mean_seed - margin_seed, ymax = mean_seed + margin_seed), linewidth = 0.5) +
-  theme_bw()
+  labs(x = "Mound location",
+       y = "Mean number of seeds") +
+  theme_bw() +
+  theme(legend.position = "none",
+        text = element_text(family = "Times New Roman"),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12)) 
 ```
-**Figure 3. Mean number of seeds in each mound location.** The darker points represent the means with standard error bars and the lighter points represent the entire data set, The red represents ...
+**Figure 3. Mean number of seeds in each mound location.** The points represent the mean number of seeds with bars for standard error. The colors represent different mound locations, red is base of mound, green is surrounding, blue is edge of grass, and purple is the inter-space. 
 
 ## Results
 
@@ -158,21 +164,14 @@ MuMIn::model.sel(null_seedmod, seedmod1, seedmod2, seedmod3, seedmod4)
 # plotting simulated residuals for the the best fitting model
 plot(simulateResiduals(seedmod2))
 ```
-**Figure 2.**
-
-```{r}
-#
-seedmod2 %>% 
-  as_flextable()
-```
-**Table 2.**
+**Figure 2. Assumptions check for selected model.**
 
 ```{r}
 # simpler model?
 seed_subset %>% 
   ggpairs(cardinality_threshold = 19)
 ```
-**Figure x. Pairs plot.** Allows us to see if there is a correlation between variables. 
+**Figure 3. Pairs plot.** Allows us to see if there is a correlation between variables. 
 
 ```{r}
 # simpler model to explain seed count?
@@ -184,21 +183,25 @@ seedmod7 <- glm.nb(nr_seeds ~ wt_seeds_mg + total_nr_infl + aspect, data = seed_
 
 MuMIn::model.sel(seedmod2, seedmod5, seedmod6, seedmod7)
 ```
-**Table x. Simpler model selection.** Model 6 containing seed weight and total number of inflorescences is the simplest.
+**Table 2. Simpler model selection.** Model 6 containing seed weight and total number of inflorescences is the simplest.
 
 ```{r}
 plot(simulateResiduals(seedmod6))
 ```
-**Table x. Check of assumptions for Model 6.**
+**Table 3. Check of assumptions for simplified model.**
+
+
+## Results
+
+
+### Results Figures & Code
 
 ```{r}
 #
-seedmod6 %>% 
+seedmod2 %>% 
   as_flextable()
 ```
 **Table x.**
-
-## Results
 
 ```{r}
 # visualizing predictions for model 2
@@ -218,15 +221,21 @@ predictions <- ggpredict(seedmod2, terms = c("total_nr_infl", "species", "treatm
 ggplot(seed.filtered, aes(x = total_nr_infl, y = nr_seeds, color = treatment, na.rm = TRUE)) +
   geom_point(alpha = 0.4) +
   geom_line(data = predictions, aes(x = x, y = predicted, color = treatment)) +
-  facet_wrap(~ species)
+  geom_ribbon(data = predictions, aes(x = x, y = predicted, ymin = conf.low, ymax = conf.high, fill = treatment), alpha = 0.05) +
+  facet_wrap(~ species) +
+  labs(x = "Number of inflorecesnse", y = "Number of seeds") +
+  theme_bw() +
+   theme(text = element_text(family = "Times New Roman"),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12)) 
 ```
 **Figure x. Visualizing model predictions.**
 
 ```{r}
-# visualizing predictions for model 6
+#
+seedmod6 %>% 
+  as_flextable()
 ```
-
-
-### Results Figures & Code
+**Table x.**
 
 ## Bibliography
