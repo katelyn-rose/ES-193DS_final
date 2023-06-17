@@ -216,13 +216,11 @@ Our hypothesis that plot type, plant species, and total number of inflorescences
 
 This model is suitable, however, there is a simpler model to explain variation in the total number of seeds. The best fitting model we found was the weight of seeds and total number of inflorescences. Comparatively, the original model had fewer correlated variables and a larger standard error (Table 3, Table 4). This model also makes biological sense; the total number of inflorescences would affect seed quantity because the number of seeds produced by a plant is dependent upon the number of flowers produced and pollinated. Plants which produce heavier seeds are likely bigger and healthier, therefore likely to produce a greater quantity of seeds as well. 
 
-fewer correlated variables and a larger standard error ()
-
 
 ### Results Figures & Code
 
 ```{r}
-#
+# model 2 summary
 seedmod2 %>% 
   as_flextable()
 ```
@@ -259,7 +257,7 @@ ggplot(seed.filtered, aes(x = total_nr_infl, y = nr_seeds, color = treatment, na
 **Figure 5. Visualizing model predictions.** Lines predicted number of seeds by inflorescences in the open plot (blue line) in the shub plot (red line). The shaded areas represent the confidence intervals. 
 
 ```{r}
-#
+# model 6 summary
 seedmod6 %>% 
   as_flextable()
 ```
