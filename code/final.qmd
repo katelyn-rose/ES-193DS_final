@@ -15,7 +15,7 @@ execute:
 
 ## Introduction
 
-The kangaroo rat (Dipodomys sp.) represents a genus burrowing rodents which feed on various plant seeds. Kangaroo rats typically have a small circular home range of about 0.05 hectares where they collect large quantities of seeds for storage in their burrows (Schroder, 1979). Their mounds constitute small-scale disturbances which have been shown to alter the plant community by enhancing the surrounding seed bank (Alkon et al., 2010). Studies have shown that the kangaroo rat seed caching of several important range forage and browse species are essential to their regeneration (Sjoberg et al., 1984). Due to its relatively large impact on the ecosystem, the kangaroo rat is considered a keystone species (Chew, 2003). In this analysis we will be utilizing a dataset collected by Koontz and Simpson (2013) in order to understand how the quantity of seeds varies spatially between kangaroo rat mound locations; at the base of the mound (B), surrounding area of the mound (S), edge of Bouteloua eripoda (black grama) grass clumps (E), and the interspace between black grama grass clumps (I). If our hypothesis is supported, there will be a significant difference in the mean number of seeds between at least two locations.
+The kangaroo rat (*Dipodomys sp.*) represents a genus burrowing rodents which feed on various plant seeds. Kangaroo rats typically have a small circular home range of about 0.05 hectares where they collect large quantities of seeds for storage in their burrows (Schroder, 1979). Their mounds constitute small-scale disturbances which have been shown to alter the plant community by enhancing the surrounding seed bank (Alkon et al., 2010). Studies have shown that the kangaroo rat seed caching of several important range forage and browse species are essential to their regeneration (Sjoberg et al., 1984). Due to its relatively large impact on the ecosystem, the kangaroo rat is considered a keystone species (Chew, 2003). In this analysis we will be utilizing a dataset collected by Koontz and Simpson (2013) in order to understand how the quantity of seeds varies spatially between kangaroo rat mound locations; at the base of the mound (B), surrounding area of the mound (S), edge of Bouteloua eripoda (black grama) grass clumps (E), and the interspace between black grama grass clumps (I). If our hypothesis is supported, there will be a significant difference in the mean number of seeds between at least two locations.
 
 ### Introduction Code
 
@@ -43,7 +43,7 @@ rat <- read_csv(here("data","sev208_kratseedbank_20120213.txt"))
 
 ## Methods
 
-Koontz and Simpson (2013) collected data on kangaroo rat mounds in Sevilleta National Wildlife Refuge Long-term Ecological Research (LTER) site in Socorro County in central New Mexico to examine the effects of kangaroo rat mounds on surrounding plant communities. The resulting data was wrangled and uploaded to RStudio. We initially filtered the dataset to extract the variables most relevant to answering our research question: how does total seed number differ between kangaroo rat mound locations? The dataset is already cleaned with no missing data (Figure 1). Visually, there seems to be a relationship between the number of seeds versus mound location (Figure 2). Statistically, we used a Kruskal-Wallis rank sum test to determine that there is a significant difference in seed counts between at least two of the mound locations (Table 1, $x^2$(3) = 21.932, df = 3, p-value = >0.001, $\alpha$ = 0.005). We calculated the effect size to quantify the effect, which was small (Table 2). This finding supports our hypothesis that there will be a significant difference in the mean number of seeds between at least two locations. To measure the variation in seed counts between different mound locations, we performed a Pairwise Wilcoxon Rank Sum Test. The greatest difference in seed counts occurred between the base of the mound and the inter-space between black grama grass and the mound (Table 3). 
+Koontz and Simpson (2013) collected data on kangaroo rat mounds in Sevilleta National Wildlife Refuge Long-term Ecological Research (LTER) site in Socorro County in central New Mexico to examine the effects of kangaroo rat mounds on surrounding plant communities. The resulting data was wrangled and uploaded to RStudio. We initially filtered the dataset to extract the variables most relevant to answering our research question: how does total seed number differ between kangaroo rat mound locations? The dataset is already cleaned with no missing data (Figure 1). Visually, there seems to be a relationship between the number of seeds versus mound location (Figure 2). Statistically, we used a Kruskal-Wallis rank sum test to determine that there is a significant difference in seed counts between at least two of the mound locations (Table 1, $x^2$(3) = 21.932, p-value = >0.001, $\alpha$ = 0.005). We calculated the effect size to quantify the effect, which was small (Table 2). This finding supports our hypothesis that there will be a significant difference in the mean number of seeds between at least two locations. To measure the variation in seed counts between different mound locations, we performed a Pairwise Wilcoxon Rank Sum Test. The greatest difference in seed counts occurred between the base of the mound and the inter-space between black grama grass and the mound (Table 3). 
 
 ### Methods Figures & Code
 ```{r}
@@ -138,6 +138,12 @@ seed <- read_csv(here("data", "knb-lter-nwt.297.1", "shrubstudy_seed_ctwt.ms.dat
 
 ## Methods
 
+Seaver (2022) collected data on flowering phenology, seed counts, and pollinator visitation rates in shrub and open plots in Niwot Ridge between 2019 - 2021. We initially filtered this dataset to extract the variables most relevant to answering our research question: how does seed count vary with plot type, plant species, and total number of inflorescences? We are also interested in examining whether there is a simpler model to explain variation in seed count. After initial wrangling and filtering, we began our analysis by creating a visualization of the missing data in our entire data subset (Figure 1). There is some missingness in the total number of seeds, the weight of seeds, and the distance from shrub. 
+
+To determine how seed count varies with plot type, plant species, and total number of inflorescences, we created a null model and multiple ful models using different formulas of linear regression. We ranked our models by AIC and the best fitting model was the negative binomial generalized linear model (Table 1).  An assumption check for the selected model shows normally distributed residuals, however, some quantile deviations were detected. We are choosing to move forward with my model because 
+
+There may be a simpler model which explains variance in seed counts. We created a pair plot of all of our variables of interest compared against each other to better understand relationships between our variables (Figure 3). There seems to be a strong correlation between number of seeds and weight of seeds, total number of inflorescences, and plot aspect. We created more full models with these three variables as predictors and used AIC to compare them to the previously selected model and the null model. The best fitting model we found to explain the total number of seeds was the weight of seeds and total number of inflorescences (Table 2).  Our simpler model shows normally distributed residuals with quantile deviations in the residuals vs. predicted plot.
+
 ### Methods Figures & Code
 
 ```{r}
@@ -174,7 +180,7 @@ MuMIn::model.sel(null_seedmod, seedmod1, seedmod2, seedmod3, seedmod4)
 # plotting simulated residuals for the the best fitting model
 plot(simulateResiduals(seedmod2))
 ```
-**Figure 2. Assumptions check for selected model.**
+**Figure 2. Assumptions check for selected model.** The black points represent residuals. The red lines depict patterns in the residuals. 
 
 ```{r}
 # simpler model?
@@ -202,6 +208,12 @@ plot(simulateResiduals(seedmod6))
 
 
 ## Results
+
+The original model 
+
+
+However, there is a simpler model to explain variation in the total number of seeds. The best fitting model we found was the weight of seeds and total number of inflorescences. This model also makes biological sense; the total number of inflorescences would affect seed quantity because the number of seeds produced by a plant is dependent upon the number of flowers produced and pollinated. Plants which produce heavier seeds are likely bigger and healthier, therefore likely to produce a greater quantity of seeds as well. 
+
 
 ### Results Figures & Code
 
